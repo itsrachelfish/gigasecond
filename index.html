@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Rachel's Gigasecond Calculator</title>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+
+        <style>
+            html, body, canvas {
+                width: 100vw;
+                height: 100vh;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+
+            .wrapper {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .counter {
+                font-family: "Lobster";
+                font-size: 100px;
+                color: #fff;
+            }
+        </style>
+
+        <script src="./node_modules/wetfish-basic/dist/basic.js"></script>
+
+        <script>
+            $(document).ready(function()
+            {
+                const canvas = document.getElementById("canvas");
+                const context = canvas.getContext("2d");
+
+                let width;
+                let height;
+
+                const setCanvasExtents = () => {
+                    width = document.body.clientWidth;
+                    height = document.body.clientHeight;
+                    canvas.width = width;
+                    canvas.height = height;
+                };
+
+                setCanvasExtents();
+
+                window.onresize = () => {
+                    setCanvasExtents();
+                };
+
+                const makeStars = count => {
+                    const out = [];
+                    for (let i = 0; i < count; i++) {
+                        const s = {
+                            x: Math.random() * 1600 - 800,
+                            y: Math.random() * 900 - 450,
+                            z: Math.random() * 1000
+                        };
+                        out.push(s);
+                    }
+                    return out;
+                };
+
+                let stars = makeStars(10000);
+
+                const clear = () => {
+                    context.fillStyle = "black";
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                };
+
+                const putPixel = (x, y, brightness) => {
+                    const intensity = brightness * 200;
+                    const rgb = "rgb(" + intensity + "," + intensity + "," + intensity + ")";
+                    context.fillStyle = rgb;
+                    context.fillRect(x, y, 2, 2);
+                };
+
+                const moveStars = distance => {
+                    const count = stars.length;
+                    for (var i = 0; i < count; i++) {
+                        const star = stars[i];
+                        star.z -= distance;
+                        while (star.z <= 1) {
+                            star.z += 1000;
+                        }
+                    }
+                };
+
+                let prevTime;
+                const init = time => {
+                    prevTime = time;
+                    requestAnimationFrame(tick);
+                };
+
+                const tick = time => {
+                    let elapsed = time - prevTime;
+                    prevTime = time;
+
+                    moveStars(elapsed * 0.1);
+
+                    clear();
+
+                    const cx = width / 2;
+                    const cy = height / 2;
+
+                    const count = stars.length;
+                    for (var i = 0; i < count; i++) {
+                        const star = stars[i];
+
+                        const x = cx + star.x / (star.z * 0.001);
+                        const y = cy + star.y / (star.z * 0.001);
+
+                        if (x < 0 || x >= width || y < 0 || y >= height) {
+                            continue;
+                        }
+
+                        const d = star.z / 1000.0;
+                        const b = 1 - d * d;
+
+                        putPixel(x, y, b);
+                    }
+
+                    requestAnimationFrame(tick);
+                };
+
+                requestAnimationFrame(init);
+            });
+
+            $(document).ready(function()
+            {
+                const startTime = prompt("Please enter the starting unix timestamp:");
+                const startDate = new Date(startTime * 1000);
+
+                setInterval(() => {
+                    const currentDate = new Date();
+                    const difference = currentDate - startDate;
+
+                    $('.counter').text(Math.floor((difference / 1000)).toLocaleString());
+                }, 300);
+             });
+        </script>
+    </head>
+    <body>
+      <canvas id="canvas"></canvas>
+
+      <div class="wrapper">
+          <div class="counter">1,234,567</div>
+      </div>
+    </body>
+</html>
